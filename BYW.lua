@@ -15,11 +15,7 @@ local Window = Rayfield:CreateWindow({
         FolderName = "BYWScriptConfig",
         FileName = "BYWConfig"
     },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = false
-    },
+    Discord = {},
     KeySystem = true,
     KeySettings = {
         Title = "BYW Access System",
@@ -36,7 +32,7 @@ local MainTab = Window:CreateTab("Главная", 4483362458)
 
 MainTab:CreateParagraph({
     Title = "BYW SCRIPT v1.5.0",
-    Content = "Добро пожаловать в BYW SCRIPT!\n\nРазработчик: BYW
+    Content = "Добро пожаловать в BYW SCRIPT! В скрипте собраны все универсальные функции, которые подходят для каждой игры.\n\nРазработчик: BYW DEV"
 })
 
 local xrayEnabled = false
