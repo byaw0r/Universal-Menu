@@ -1,10 +1,10 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "BYW SCRIPT - UNIVERSAL MENU",
+    Name = "BYW ScriptX - UNIVERSAL MENU",
     Icon = 0,
-    LoadingTitle = "BYW Script",
-    LoadingSubtitle = "BYW DEV",
+    LoadingTitle = "BYW LoaderX",
+    LoadingSubtitle = "BYW DEVELOPER",
     ShowText = "BYW",
     Theme = "Default",
     ToggleUIKeybind = "K",
@@ -31,8 +31,8 @@ local Window = Rayfield:CreateWindow({
 local MainTab = Window:CreateTab("Главная", 4483362458)
 
 MainTab:CreateParagraph({
-    Title = "BYW SCRIPT v1.5.0",
-    Content = "Добро пожаловать в BYW SCRIPT! В скрипте собраны все универсальные функции, которые подходят для каждой игры.\n\nРазработчик: BYW DEV"
+    Title = "BYW ScriptX",
+    Content = "Добро пожаловать в BYW SCRIPT! В скрипте собраны все универсальные функции, которые подходят для каждой игры.\n\nРазработчик: BYW DEVELOPER"
 })
 
 local xrayEnabled = false
