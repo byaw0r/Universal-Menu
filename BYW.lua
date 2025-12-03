@@ -12,7 +12,7 @@ local Window = Rayfield:CreateWindow({
     DisableBuildWarnings = false,
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "BYWScriptConfig",
+        FolderName = "BYWkey",
         FileName = "BYWConfig"
     },
     Discord = {},
