@@ -20,7 +20,6 @@ local Window = Rayfield:CreateWindow({
     KeySettings = {
         Title = "BYW Access System",
         Subtitle = "Enter key to continue",
-        Note = "Key: BYW DEV",
         FileName = "BYWKey",
         SaveKey = true,
         GrabKeyFromSite = false,
