@@ -35,6 +35,49 @@ MainTab:CreateParagraph({
     Content = "Добро пожаловать в BYW SCRIPT! В скрипте собраны все универсальные функции, которые подходят для каждой игры.\n\nРазработчик: BYW DEVELOPER"
 })
 
+local stretchEnabled = false
+local stretchResolution = 0.80
+local stretchConnection = nil
+
+local function enableStretch()
+    local Camera = workspace.CurrentCamera
+    
+    if stretchConnection then
+        stretchConnection:Disconnect()
+        stretchConnection = nil
+    end
+    
+    stretchConnection = game:GetService("RunService").RenderStepped:Connect(function()
+        if stretchEnabled then
+            Camera.CFrame = Camera.CFrame * CFrame.new(0, 0, 0, 1, 0, 0, 0, stretchResolution, 0, 0, 0, 1)
+        end
+    end)
+    
+    stretchEnabled = true
+end
+
+local function disableStretch()
+    if stretchConnection then
+        stretchConnection:Disconnect()
+        stretchConnection = nil
+    end
+    
+    stretchEnabled = false
+end
+
+local stretchToggle = MainTab:CreateToggle({
+    Name = "Растяг 4:3",
+    CurrentValue = false,
+    Flag = "StretchToggle",
+    Callback = function(Value)
+        if Value then
+            enableStretch()
+        else
+            disableStretch()
+        end
+    end,
+})
+
 local xrayEnabled = false
 local xrayParts = {}
 local originalProperties = {}
@@ -487,6 +530,129 @@ local farmToggle = FarmTab:CreateToggle({
 })
 
 local UtilityTab = Window:CreateTab("Утилиты", 4483362458)
+
+local fpsBoostEnabled = false
+local fpsBoostOriginalSettings = {}
+local workspaceConnections = {}
+
+local function optimizeParts(instance)
+    if instance:IsA("BasePart") then
+        instance.Material = Enum.Material.Plastic
+        instance.Reflectance = 0
+        if instance:IsA("MeshPart") or instance:IsA("PartOperation") then
+            instance.CastShadow = false
+        end
+    elseif instance:IsA("ParticleEmitter") or instance:IsA("Fire") or instance:IsA("Smoke") then
+        instance:Destroy()
+    end
+end
+
+local function optimizeWorkspace()
+    for _, obj in pairs(game.Workspace:GetDescendants()) do
+        optimizeParts(obj)
+    end
+    
+    local childAdded = game.Workspace.DescendantAdded:Connect(function(obj)
+        optimizeParts(obj)
+    end)
+    
+    table.insert(workspaceConnections, childAdded)
+end
+
+local function enableFPSBoost()
+    fpsBoostOriginalSettings = {
+        QualityLevel = settings().Rendering.QualityLevel,
+        FrameRateManager = settings().Rendering.FrameRateManager,
+        GlobalShadows = game:GetService("Lighting").GlobalShadows,
+        FogEnd = game:GetService("Lighting").FogEnd,
+        Brightness = game:GetService("Lighting").Brightness,
+        TerrainWaterWaveSize = game:GetService("Workspace").Terrain.WaterWaveSize,
+        TerrainWaterWaveSpeed = game:GetService("Workspace").Terrain.WaterWaveSpeed,
+        TerrainWaterReflectance = game:GetService("Workspace").Terrain.WaterReflectance,
+        TerrainWaterTransparency = game:GetService("Workspace").Terrain.WaterTransparency
+    }
+    
+    settings().Rendering.QualityLevel = 1
+    settings().Rendering.FrameRateManager = 0
+    
+    local Lighting = game:GetService("Lighting")
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 100000
+    Lighting.Brightness = 2
+    
+    local Terrain = game:GetService("Workspace").Terrain
+    Terrain.WaterWaveSize = 0
+    Terrain.WaterWaveSpeed = 0
+    Terrain.WaterReflectance = 0
+    Terrain.WaterTransparency = 1
+    
+    for _, effect in pairs(Lighting:GetChildren()) do
+        if effect:IsA("BlurEffect") or effect:IsA("SunRaysEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("BloomEffect") then
+            effect.Enabled = false
+        end
+    end
+    
+    optimizeWorkspace()
+    
+    if pcall(function() return sethiddenproperty end) then
+        pcall(function()
+            sethiddenproperty(Terrain, "Decoration", false)
+        end)
+    end
+    
+    fpsBoostEnabled = true
+end
+
+local function disableFPSBoost()
+    if fpsBoostOriginalSettings.QualityLevel then
+        settings().Rendering.QualityLevel = fpsBoostOriginalSettings.QualityLevel
+        settings().Rendering.FrameRateManager = fpsBoostOriginalSettings.FrameRateManager
+        
+        local Lighting = game:GetService("Lighting")
+        Lighting.GlobalShadows = fpsBoostOriginalSettings.GlobalShadows
+        Lighting.FogEnd = fpsBoostOriginalSettings.FogEnd
+        Lighting.Brightness = fpsBoostOriginalSettings.Brightness
+        
+        local Terrain = game:GetService("Workspace").Terrain
+        Terrain.WaterWaveSize = fpsBoostOriginalSettings.TerrainWaterWaveSize or 0.5
+        Terrain.WaterWaveSpeed = fpsBoostOriginalSettings.TerrainWaterWaveSpeed or 10
+        Terrain.WaterReflectance = fpsBoostOriginalSettings.TerrainWaterReflectance or 0.5
+        Terrain.WaterTransparency = fpsBoostOriginalSettings.TerrainWaterTransparency or 0.5
+        
+        for _, effect in pairs(Lighting:GetChildren()) do
+            if effect:IsA("PostEffect") then
+                effect.Enabled = true
+            end
+        end
+        
+        for _, connection in pairs(workspaceConnections) do
+            connection:Disconnect()
+        end
+        workspaceConnections = {}
+        
+        if pcall(function() return sethiddenproperty end) then
+            pcall(function()
+                sethiddenproperty(Terrain, "Decoration", true)
+            end)
+        end
+    end
+    
+    fpsBoostEnabled = false
+end
+
+-- FPS Boost Toggle
+local fpsBoostToggle = UtilityTab:CreateToggle({
+    Name = "FPS Boost",
+    CurrentValue = false,
+    Flag = "FpsBoostToggle",
+    Callback = function(Value)
+        if Value then
+            enableFPSBoost()
+        else
+            disableFPSBoost()
+        end
+    end,
+})
 
 local noclipEnabled = false
 local noclipConnection
@@ -1047,6 +1213,15 @@ local function onCharacterAdded(character)
         end
     end
     
+    if stretchEnabled then
+        disableStretch()
+        if stretchToggle then
+            pcall(function()
+                stretchToggle:Set(false)
+            end)
+        end
+    end
+    
     if hitboxEnabled then
         _G.Disabled = false
         stopESP()
@@ -1115,4 +1290,10 @@ game.Players.LocalPlayer.CharacterRemoving:Connect(function()
     end)
 end)
 
-print("BYW Script Hub loaded!")
+game:BindToClose(function()
+    if fpsBoostEnabled then
+        disableFPSBoost()
+    end
+end)
+
+print("BYW ScriptX loaded!")
